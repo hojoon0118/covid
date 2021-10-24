@@ -1,6 +1,6 @@
 ---
 title: "My Project"
-author: "hi"
+author: "Hojoon Kim"
 output:
   html_document:
     df_print: paged
