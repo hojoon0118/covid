@@ -1,6 +1,6 @@
 ---
 title: "My Project"
-author: "Hojoon Kim"
+author: "hi"
 output:
   html_document:
     df_print: paged
@@ -10,6 +10,7 @@ output:
 #install.packages(c("skimr", "visdat", "summarytools", "DT"))
 #install.packages("devtools")
 #devtools::install_github("daattali/ggExtra")
+#install.packages("report")
 ```
 
 
@@ -37,6 +38,7 @@ library("DT")
 library("ggplot2")
 library("ggExtra")
 library("patchwork")# for making figure panels
+#library("report")
 ```
 
 ## Project question
@@ -64,7 +66,7 @@ __q6__ Save your dataset from the R package to your environment.
 ```{r}
 # Example
 # bach_data <- bachelorette
-df.covid <- read.csv(file = 'data1/transformed_data.csv', fileEncoding="UTF-8-BOM")
+df.covid <- read.csv(file = 'data/transformed_data.csv', fileEncoding="UTF-8-BOM")
 ```
 
 __q8__  Use the glimpse() function take a look at your dataset. How many observations are in your dataset and how many variables? 
@@ -186,6 +188,27 @@ p1 + p2 +p3 + p4 + p5 + p6
      ) 
 ```
 
+```{r}
+fit = lm(TDPOP ~ GDPCAP+TCPOP+HDI+POP, data = df.lastdate)
+HGa <- aov(fit) %>% summary()
+
+HGa
+
+fit = lm(TDPOP ~ GDPCAP+HDI+POP, data = df.lastdate)
+HGB <- aov(fit) %>% summary()
+
+HGB
+
+fit = lm(TCPOP ~ GDPCAP+HDI+POP, data = df.lastdate)
+HGC <- aov(fit) %>% summary()
+
+fit
+
+HGC
+```
+A multiple linear regression was calculated to predict TC based on GDPCAP, HDI, and POP. A significant regression equation was found (F(3, 157) = `r HGC$f.value`, `r HGC$p.value`). Participants' predicted TC is equal to 0.01985 * GDPCAP + 0.23022 * HDI + 0.02431 * POP - 0.13525.  
+GDPCAP(f= 36.217, p < 0.001) and POP(f = 20.339, p < 0.001) were significant predictors of TC. While HDI(f = 2.234, p=0.137) was not significant predictors of TC.  
+Therefore, I further analyzed each predictors of its relations to the TC.  
 
 ```{r}
 #head(df.covid)
@@ -216,13 +239,20 @@ p3 <- ggplot(df.lastdate, aes(x=GDPCAP, y=TCPOP, color = "#42e0f5")) +
   theme_classic()+
       theme(legend.position = "none")
 
+p4 <- ggplot(df.lastdate, aes(x=GDPCAP, y=TDPOP, color = "#42e0f5")) +
+      geom_point(alpha = 1, size = 1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_classic()+
+      theme(legend.position = "none")
 
-p1 + p2 + p3
+
+p1 + p2 + p3 +p4
   plot_layout(ncol=1) &
   theme(
       plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
      ) 
 ```
+
 
 ```{r}
 c1 <- cor.test(df.lastdate$GDPCAP,df.lastdate$HDI)
@@ -231,9 +261,22 @@ c2 <- cor.test(df.lastdate$TC, df.lastdate$TD)
 
 c3 <- cor.test(df.lastdate$GDPCAP,df.lastdate$TCPOP)
 
-fit = lm(HDI ~ 1 + GDPCAP, data = df.lastdate)
+```
 
-HGsum <- aov(fit)%>%summary()
+All 3 have significant relationship between each variables and all of it has positive slope which means that it has positive relationship.
+Pearson's correlation test revealed that GDPCAP and HDI has a strong positive relationship  p = `r c1$p.value %>% round(3)` r(`r c1$parameter`) = `r c1$estimate %>% round(3)` and similar positive relationship was found for TC and TD  p = `r c2$p.value %>% round(3)` r(`r c2$parameter`) = `r c2$estimate %>% round(3)` and lastly TCPOP and GDPCAP also showed positive relationship  p = `r c3$p.value %>% round(3)` r(`r c3$parameter`) = `r c3$estimate %>% round(3)` 
+As expected GDPCAP and HDI had strong positive relationship because HDI is measurement for Human development which is known to be a measure that is indicative of a country's wealth.
+More total cases leads to more total death due to covid as seen in above graph.
+
+Interesting result shown in the graph of relationship between TCPOP and GDPCAP is it has positive relationship between these two. I expected that as country has more wealth and have better healthcare system, people will get less exposure to covid. However the result is shown in opposite way which means that people get more exposed to covid as country has better social infrastructure.
+
+Beyond that I thought that better infrastructure would prevent people from dying even if they are infected by their covid but the result did not come out as I expected. Maybe this is due to the fact that there is no active way of treating covid yet.  
+
+
+
+```{r}
+fit = lm(HDI ~ 1 + GDPCAP, data = df.lastdate)
+HGsum <- aov(fit) %>% summary()
 
 fit = lm(TC ~ 1 + TD, data = df.lastdate)
 
@@ -243,19 +286,17 @@ fit = lm(TCPOP ~ 1 + GDPCAP, data = df.lastdate)
 
 CGsum <- aov(fit)%>%summary()
 
+HGsum
+
+CDsum
+
+CGsum
 ```
 
-All 3 have significant relationship between each variables and all of it has positive slope which means that it has positive relationship.
-c1 has Pearson's correlation test revealed that GDPCAP and HDI has (r = `r c1$estimate`, p = `r c1$p.value`)
-For c2 has Pearson's correlation test revealed that TC and TD has (r = `r c2$estimate`, p = `r c2$p.value`)
-As a last result, c3 has Pearson's correlation test revealed that GDPCAP and TCPOP has (r = `r c3$estimate`, p = `r c3$p.value`)
-By performing a linear regression, HDI and GDPCAP showed significant positive main effect (F(1,159) = `HGsum[[1]][1,4]`, p = `HGsum[[1]][1,5]`).
-Similarly, TC and TD showed significant significant main effect (F(1,159) = `CDsum[[1]][1,4]`, p = `CDsum[[1]][1,5]`).
-Lastly, TCPOP and GDPCAP showed significant main effect. (F(1,159) = `CGsum[[1]][1,4]`, p = `CGsum[[1]][1,5]`).
+Individual predictors relationship were analyzed using linear models. HDI and GDP(F(1, 159) = 1705, p < 0.001) showed significant linear relationship, which confirms previous correlation result.
+TC and TD(F(1, 159) = 1189, p < 0.001) showed significant linear relationship as expected and it matches with the previous result.
 
-```{r}
-c1$estimate
-```
+TC and GDPCAP(F(1, 159) = 1705, p < 0.001) surprisingly showed significant linear relationship contrary to what was expected since many will think higher GDPCAP countries would have advanced healthcare system which would lead to lower cases of covid.  
 
 
 

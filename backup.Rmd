@@ -1,0 +1,242 @@
+---
+title: "backup"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r, eval=FALSE, echo=FALSE}
+# p <- ggplot(df.covid %>% filter(GDPCAP>0), aes(x=GDPCAP), ) +
+#   geom_density(fill="#69b3a2", color="#e9ecef", alpha=0.8)
+# p
+```
+
+```{r}
+attach(df.covid)
+par(mfrow=c(2,2))
+hist(POP, main="histogram of ")
+hist(GDPCAP, main="Scatterplot of wt vs. mpg")
+hist(HDI, main="Histogram of wt")
+hist(TC, main="Boxplot of wt")
+```
+
+HDI
+```{r}
+p5 <- df.covid %>%
+  filter( HDI>0 ) %>%
+  ggplot( aes(x=HDI)) +
+    geom_histogram( binwidth=0.1, fill="#42e0f5", color="#e9ecef", alpha=0.9) +
+    ggtitle("HDI histogram") +
+    theme(
+      plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
+    )
+p
+
+#p <- ggplot(df.covid %>% filter(GDPCAP>0), aes(x=GDPCAP)) + 
+#  geom_histogram(binwidth=0.45, fill="#69b3a2", color="#e9ecef", alpha=0.9)
+#p
+```
+
+GPDCAP
+
+```{r}
+p6 <- df.lastdate %>%
+  filter( GDPCAP>0 ) %>%
+  ggplot( aes(x=GDPCAP)) +
+    geom_histogram( binwidth=0.1, fill="#42e0f5", color="#e9ecef", alpha=0.9) +
+    ggtitle("GDPCAP histogram") +
+    theme(
+      plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
+    )
+p
+
+#p <- ggplot(df.covid %>% filter(GDPCAP>0), aes(x=GDPCAP)) + 
+#  geom_histogram(binwidth=0.45, fill="#69b3a2", color="#e9ecef", alpha=0.9)
+#p
+```
+This histogram shows that the distribution of GDP per Capita (GDPCAP) is left-skewed
+
+```{r}
+p <- df.covid %>% filter(GDPCAP>0)
+p$GDPCAP %>% median()
+```
+The median value of data is 9.54
+
+
+
+
+Total Cases
+```{r}
+p4 <- df.lastdate %>%
+  filter( TC>0 ) %>%
+  ggplot( aes(x=TC)) +
+    geom_histogram( binwidth=0.1, fill="#42e0f5", color="#e9ecef", alpha=0.9) +
+    ggtitle("Total Cases histogram") +
+    theme(
+      plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
+    )
+p4
+
+#p <- ggplot(df.covid %>% filter(GDPCAP>0), aes(x=GDPCAP)) + 
+#  geom_histogram(binwidth=0.45, fill="#69b3a2", color="#e9ecef", alpha=0.9)
+#p
+```
+
+
+Total Death
+```{r}
+p3 <- df.covid %>%
+  filter( TD>0 ) %>%
+  ggplot( aes(x=TD)) +
+    geom_histogram( binwidth=0.1, fill="#42e0f5", color="#e9ecef", alpha=0.9) +
+    ggtitle("Total Death histogram") +
+    theme(
+      plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
+    )
+p
+
+#p <- ggplot(df.covid %>% filter(GDPCAP>0), aes(x=GDPCAP)) + 
+#  geom_histogram(binwidth=0.45, fill="#69b3a2", color="#e9ecef", alpha=0.9)
+#p
+```
+
+Sexually Transmitted Infection
+```{r}
+p2 <- df.covid %>%
+  filter( STI>0 ) %>%
+  ggplot( aes(x=STI)) +
+    geom_histogram( binwidth=0.1, fill="#42e0f5", color="#e9ecef", alpha=0.9) +
+    ggtitle("Sexually Transmitted Infection histogram") +
+    theme(
+      plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
+    )
+p
+
+#p <- ggplot(df.covid %>% filter(GDPCAP>0), aes(x=GDPCAP)) + 
+#  geom_histogram(binwidth=0.45, fill="#69b3a2", color="#e9ecef", alpha=0.9)
+#p
+```
+
+
+Population
+```{r}
+p <- df.covid %>%
+  filter( POP>0 ) %>%
+  ggplot( aes(x=POP)) +
+    geom_histogram( binwidth=0.1, fill="#42e0f5", color="#e9ecef", alpha=0.9) +
+    ggtitle("Population histogram") +
+    theme(
+      plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
+    )
+p
+
+#p <- ggplot(df.covid %>% filter(GDPCAP>0), aes(x=GDPCAP)) + 
+#  geom_histogram(binwidth=0.45, fill="#69b3a2", color="#e9ecef", alpha=0.9)
+#p
+```
+
+
+
+```{r}
+p <- ggplot(df.covid %>% filter(HDI>0), aes(x=HDI)) + 
+  geom_histogram(binwidth=0.02, fill="#69b3a2", color="#e9ecef", alpha=0.9)
+p
+```
+
+
+```{r}
+p <- df.covid %>%
+  filter( HDI>0 ) %>%
+  ggplot( aes(x=HDI)) +
+    geom_histogram( binwidth=0.01, fill="#42e0f5", color="#e9ecef", alpha=0.9) +
+    ggtitle("Bin size = 0.01") +
+    theme(
+      plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
+    )
+p
+```
+
+
+
+```{r}
+# Stacked density plot:
+p <- ggplot(data=df.covid, aes(x=price, group=cut, fill=cut)) +
+    geom_density(adjust=1.5, position="fill")
+```
+
+
+I erased the HDI = 0 part since it is no use in the research.
+```{r}
+# p <- ggplot(df.covid, aes(x=TC)) + 
+#   geom_histogram(binwidth=0.2, fill="#69b3a2", color="#e9ecef", alpha=0.9)
+# p
+```
+ 
+```{r}
+# p <- ggplot(df.covid, aes(x=TD)) + 
+#   geom_histogram(binwidth=0.2, fill="#69b3a2", color="#e9ecef", alpha=0.9)
+# p
+```
+
+```{r}
+# p <- ggplot(df.covid, aes(x=STI)) + 
+#   geom_histogram(binwidth=0.88, fill="#69b3a2", color="#e9ecef", alpha=0.9)
+# p
+```
+
+```{r}
+# p <- ggplot(df.covid %>% filter(POP>0), aes(x=POP)) + 
+#   geom_histogram(binwidth=0.5, fill="#69b3a2", color="#e9ecef", alpha=0.9)
+# p
+```
+
+```{r}
+df.covid2 <- df.covid%>%filter((COUNTRY %in% c("China", "United States")))
+
+df.covid2 <- df.covid2 %>% filter(GDPCAP>0)
+
+fit = lm(TC ~ 1 + GDPCAP, data = df.covid2)
+
+fit%>%summary()
+
+p <- ggplot(df.covid2, aes(x=DATE, y=TC, color = "#42e0f5")) +
+      geom_point(alpha = 0.3, size = 0.1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_bw()
+p
+```
+
+```{r}
+usa<-df.covid%>%filter(COUNTRY=="United States")
+chn<-df.covid%>%filter(COUNTRY=="China")
+```
+
+```{r}
+t.test(usa$TC,chn$TC)
+```
+
+```{r}
+df.covid%>%filter(COUNTRY=="United States"|COUNTRY=="China")%>%
+  ggplot(.,aes(x=COUNTRY, y=TD))+
+  geom_bar(stat = "identity")
+```
+
+
+```{r}
+# Set relative size of marginal plots (main plot 10x bigger than marginals)
+#p2 <- ggMarginal(p, type="histogram", size=5)
+
+# Set relative size of marginal plots (main plot 10x bigger than marginals)
+#p1 <- ggMarginal(p, type="histogram", size=5)
+ 
+# Custom marginal plots:
+#p2 <- ggMarginal(p, type="histogram", fill = "slateblue", xparams = list(  bins=10))
+ 
+# Show only marginal plot for x axis
+#p3 <- ggMarginal(p, margins = 'x', color="purple", size=4)
+```
+ 
