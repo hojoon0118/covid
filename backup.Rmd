@@ -240,3 +240,274 @@ df.covid%>%filter(COUNTRY=="United States"|COUNTRY=="China")%>%
 #p3 <- ggMarginal(p, margins = 'x', color="purple", size=4)
 ```
  
+
+
+\```{r}
+ df.covid <- df.covid%>%filter(TC>0, GDPCAP>0)
+# classic plot :
+p <- ggplot(df.covid, aes(x=GDPCAP, y=TC, color = "#42e0f5", size=1)) +
+      geom_point() +
+      theme(legend.position="none")
+ 
+# Set relative size of marginal plots (main plot 10x bigger than marginals)
+p1 <- ggMarginal(p, type="histogram", size=5)
+p1
+
+```
+
+```{r}
+
+```
+
+
+RELATION BETWEEN GDPCAP AND TC
+
+```{r}
+df.covid1 <- df.covid%>% filter(GDPCAP>0)
+p <- ggplot(df.covid1, aes(x=GDPCAP, y=TC, color = "#42e0f5", size=1)) +
+      geom_point() +
+      theme(legend.position="none")
+p
+```
+
+```{r}
+p <- ggMarginal(p, type="histogram", size=5)
+p
+```
+
+```{r}
+cor.test(df.covid$TC, df.covid$GDPCAP)
+```
+
+```{r}
+fit = lm(TC ~ 1 + GDPCAP, data = df.covid1)
+
+fit%>%summary()
+```
+
+
+
+RELATION BETWEEN GDPCAP AND TC
+
+```{r}
+
+```
+
+
+
+
+RELATION BETWEEN POP AND GDPCAP
+
+```{r}
+df.covidgdp <- df.covid %>% filter(GDPCAP>0)
+
+fit = lm(TC ~ 1 + GDPCAP, data = df.covidgdp)
+
+fit%>%summary()
+
+p <- ggplot(df.covidgdp, aes(x=POP, y=GDPCAP, color = "#42e0f5")) +
+      geom_point(alpha = 0.3, size = 0.1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_bw()
+p
+```
+
+
+RELATION BETWEEN GDPCAP AND TD
+
+```{r}
+df.covidgf <- df.covid %>% filter(GDPCAP>0)
+
+fit = lm(TD ~ 1 + GDPCAP, data = df.covidgf)
+
+fit%>%summary()
+
+p <- ggplot(df.covidgf, aes(x=GDPCAP, y=TD, color = "#42e0f5")) +
+      geom_point(alpha = 0.3, size = 0.1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+      theme_bw()
+p
+```
+
+
+
+RELATION BETWEEN POP AND TC
+
+```{r}
+p <- ggplot(df.covid, aes(x=POP, y=TC, color = "#42e0f5", size=1)) +
+      geom_point() +
+      theme(legend.position="none")
+ 
+# Set relative size of marginal plots (main plot 10x bigger than marginals)
+p1 <- ggMarginal(p, type="histogram", size=5)
+ 
+# Custom marginal plots:
+#p2 <- ggMarginal(p, type="histogram", fill = "slateblue", xparams = list(  bins=10))
+ 
+# Show only marginal plot for x axis
+#p3 <- ggMarginal(p, margins = 'x', color="purple", size=4)
+
+p1
+```
+
+```{r}
+
+```
+
+```{r}
+fit = lm(TC ~ 1 + POP, data = df.covid)
+
+fit%>%summary()
+```
+
+
+RELATION BETWEEN STI AND TC
+
+```{r}
+df.covidsf <- df.covid%>% filter(STI>0)
+```
+
+
+```{r}
+p <- ggplot(df.covidsf, aes(x=STI, y=TC, color = "#42e0f5", size=1)) +
+      geom_point() +
+      theme(legend.position="none")
+ 
+# Set relative size of marginal plots (main plot 10x bigger than marginals)
+p1 <- ggMarginal(p, type="histogram", size=5)
+ 
+# Custom marginal plots:
+#p2 <- ggMarginal(p, type="histogram", fill = "slateblue", xparams = list(  bins=10))
+ 
+# Show only marginal plot for x axis
+#p3 <- ggMarginal(p, margins = 'x', color="purple", size=4)
+
+p1
+```
+
+```{r}
+cor.test(df.covid$STI, df.covid$TC)
+```
+
+```{r}
+fit = lm(TC ~ 1 + STI, data = df.covid)
+
+fit%>%summary()
+```
+
+```{r}
+fit = lm(TC ~ 1 +STI, data = df.covidsf)
+
+fit%>%summary()
+
+p <- ggplot(df.covid, aes(x=STI, y=TC, color = "#42e0f5")) +
+      geom_point(alpha = 0.3, size = 0.1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_bw()
+p
+```
+
+
+RELATION BETWEEN STI AND GDPCAP
+```{r}
+df.covidsgf <- df.covid%>% filter(GDPCAP>0)
+```
+
+
+```{r}
+p <- ggplot(df.covidsgf, aes(x=STI, y=GDPCAP, color = "#42e0f5", size=1)) +
+      geom_point() +
+      theme(legend.position="none")
+ 
+# Set relative size of marginal plots (main plot 10x bigger than marginals)
+p1 <- ggMarginal(p, type="histogram", size=5)
+ 
+# Custom marginal plots:
+#p2 <- ggMarginal(p, type="histogram", fill = "slateblue", xparams = list(  bins=10))
+ 
+# Show only marginal plot for x axis
+#p3 <- ggMarginal(p, margins = 'x', color="purple", size=4)
+
+p1
+```
+
+```{r}
+cor.test(df.covid$STI, df.covid$GDPCAP)
+```
+
+```{r}
+fit = lm(TC ~ 1 + STI, data = df.covid)
+
+fit%>%summary()
+```
+
+```{r}
+fit = lm(TC ~ 1 + STI, data = df.covidsgf)
+
+fit%>%summary()
+
+p <- ggplot(df.covidsgf, aes(x=STI, y=TC, color = "#42e0f5")) +
+      geom_point(alpha = 0.3, size = 0.1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_bw()
+p
+```
+
+
+
+```{r}
+fit = lm(TC ~ 1 + GDPCAP, data = df.covidsgf)
+
+fit%>%summary()
+
+p <- ggplot(df.covidsgf, aes(x=STI, y=GDPCAP, color = "#42e0f5")) +
+      geom_point(alpha = 0.3, size = 0.1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_bw()
+p
+```
+
+```{r}
+df.covidstf <- df.covid%>% filter(STI>0)
+```
+
+
+```{r}
+p <- ggplot(df.covidstf, aes(x=STI, y=TD, color = "#42e0f5", size=1)) +
+      geom_point() +
+      theme(legend.position="none")
+ 
+# Set relative size of marginal plots (main plot 10x bigger than marginals)
+p1 <- ggMarginal(p, type="histogram", size=5)
+ 
+# Custom marginal plots:
+#p2 <- ggMarginal(p, type="histogram", fill = "slateblue", xparams = list(  bins=10))
+ 
+# Show only marginal plot for x axis
+#p3 <- ggMarginal(p, margins = 'x', color="purple", size=4)
+
+p1
+```
+
+```{r}
+cor.test(df.covid$STI, df.covid$TD)
+```
+
+```{r}
+fit = lm(TC ~ 1 + GDPCAP, data = df.covidsgf)
+
+fit%>%summary()
+
+p <- ggplot(df.covidsgf, aes(x=STI, y=TD, color = "#42e0f5")) +
+      geom_point(alpha = 0.3, size = 0.1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_bw()
+p
+```
+
+
+```{r}
+fit = lm(TC/POP ~ 1 + GDPCAP+HDI+STI, data = df.lastdate)
+
+fit%>%summary()
+```

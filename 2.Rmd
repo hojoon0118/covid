@@ -1,0 +1,119 @@
+---
+title: "datapermit"
+output: html_document
+---
+```{r install-packages, eval=FALSE}
+install.packages(c("skimr", "visdat", "summarytools", "DT"))
+
+```
+```{r}
+install.packages("devtools")
+devtools::install_github("daattali/ggExtra")
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages(c("janitor"))
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+library("knitr")
+library("janitor")
+library("tidyverse")
+library("DT")
+```
+## Including Plots
+```{r}
+df.covid <- read.csv(file = 'data/transformed_data.csv', fileEncoding="UTF-8-BOM")
+```
+```{r}
+ggplot(data = df.covid, 
+       mapping = aes(x = condition, y = performance)) +
+  geom_point(position = position_jitter(height = 0, width = 0.1),
+             alpha = 0.5) + 
+  stat_summary(fun.data = mean_cl_boot, 
+               geom = "linerange", 
+               size = 1) +
+  stat_summary(fun.y = "mean", 
+               geom = "point", 
+               shape = 21, 
+               color = "black", 
+               fill = "white", 
+               size = 4) +
+  scale_y_continuous(breaks = 0:10,
+                     labels = 0:10,
+                     limits = c(0, 10))
+
+```
+```{r}
+difference_actual = df.covid%>%
+  group_by(condition) %>%
+  summarize(mean = mean(performance)) %>%
+  pull(mean) %>%
+  diff()
+
+difference_actual
+```
+
+```{r}
+set.seed(1)
+df.covid =df.covid %>%
+  mutate(permutation = sample(condition))
+
+df.covid %>% 
+  group_by(permutation) %>%
+  summarize(mean = mean(performance), sd=sd(performance)) %>%
+  ungroup() %>%
+  summarize(diff=diff(mean))
+```
+
+```{r}
+n_permutations = 10000
+
+func_permutations = function(df){
+  df %>% 
+    mutate(condition = sample(condition)) %>%
+    group_by(condition) %>%
+    summarize(mean = mean(performance)) %>% 
+    pull(mean) %>%
+    diff()
+}
+
+df.permutations =tibble(
+  permutation= 1:n_permutations,
+  mean_difference = replicate(n=n_permutations, func_permutations(df.permutation))
+)
+```
+
+```{r}
+ggplot(data = df.permutations, aes(x= mean_difference))+
+  geom_histogram(aes(y=stat(density)),
+                 color= "black",
+                 fill = "lightblue") + 
+  stat_density(geom = "line",
+               size = 1.5) +
+  geom_vline(xintercept = difference_actual, color ="red", size = 2)
+```
+```{r}
+pvalue = sum(df.permutations$mean_difference <= difference_actual)/ length(df.permutations$mean_difference)
+pvalue
+```
+
+```{r}
+#t-test
+df.permutation = df.permutation %>%
+  select(condition, performance)
+
+a = df.permutation %>%
+  filter(condition == "control")
+
+b= df.permutation %>%
+  filter(condition == "experimental")
+
+t.test(a$performance, b$performance)

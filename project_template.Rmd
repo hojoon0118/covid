@@ -11,6 +11,7 @@ output:
 #install.packages("devtools")
 #devtools::install_github("daattali/ggExtra")
 #install.packages("report")
+#install.packages("bestNormalize")
 ```
 
 
@@ -39,6 +40,7 @@ library("ggplot2")
 library("ggExtra")
 library("patchwork")# for making figure panels
 #library("report")
+library(bestNormalize)
 ```
 
 ## Project question
@@ -189,6 +191,49 @@ p1 + p2 +p3 + p4 + p5 + p6
 ```
 
 ```{r}
+# Using bestNormalize library, converted distribution of each variable GDP, HDI, TC, TD 
+HDI_norm <- bestNormalize(df.lastdate$HDI, allow_lambert_s = TRUE)
+HN <- predict(HDI_norm)
+GDP_norm <- bestNormalize(df.lastdate$GDPCAP, allow_lambert_s = TRUE)
+GN <- predict(GDP_norm)
+TC_norm <- bestNormalize(df.lastdate$TCPOP, allow_lambert_s = TRUE)
+TC_N <- predict(TC_norm)
+TD_norm <- bestNormalize(df.lastdate$TDPOP, allow_lambert_s = TRUE)
+TD_N <- predict(TD_norm)
+
+# Added converted distribution of each variable GDP, HDI, TC, TD 
+
+df.lastdate$HDI_norm <- HN
+df.lastdate$GDP_norm <- GN
+df.lastdate$TC_norm <- TC_N
+df.lastdate$TD_norm <- TD_N
+```
+```{r}
+#Plotting histogram of normalized HDI, GDP, TC, TD
+p1 <- df.lastdate %>%
+  ggplot( aes(x=HDI_norm)) +
+    geom_histogram( binwidth=0.5, fill="#42e0f5", color="#e9ecef", alpha=0.9)
+p2 <- df.lastdate %>%
+  ggplot( aes(x=GDP_norm)) +
+    geom_histogram( binwidth=0.5, fill="#42e0f5", color="#e9ecef", alpha=0.9)
+p3 <- df.lastdate %>%
+  ggplot( aes(x=TC_norm)) +
+    geom_histogram( binwidth=0.5, fill="#42e0f5", color="#e9ecef", alpha=0.9)
+p4 <- df.lastdate %>%
+  ggplot( aes(x=TD_norm)) +
+    geom_histogram( binwidth=0.5, fill="#42e0f5", color="#e9ecef", alpha=0.9)
+
+#showing the histogram of normalized variables.
+p1 + p2 +p3 + p4
+  plot_layout(ncol=1) &
+  theme_classic() & 
+  theme(
+      plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
+     ) 
+```
+After the normalization procedure of HDI, GDPCAP, TCPOP, TDPOP, each variable's histogram became left skewed to normally distributed graph. Due to the normalization procedures, values of x-axis and y-axis changed, especially numbers of x-axis became 0 centered.
+
+```{r}
 fit = lm(TDPOP ~ GDPCAP+TCPOP+HDI+POP, data = df.lastdate)
 HGa <- aov(fit) %>% summary()
 
@@ -209,6 +254,26 @@ HGC
 A multiple linear regression was calculated to predict TC based on GDPCAP, HDI, and POP. A significant regression equation was found (F(3, 157) = `r HGC$f.value`, `r HGC$p.value`). Participants' predicted TC is equal to 0.01985 * GDPCAP + 0.23022 * HDI + 0.02431 * POP - 0.13525.  
 GDPCAP(f= 36.217, p < 0.001) and POP(f = 20.339, p < 0.001) were significant predictors of TC. While HDI(f = 2.234, p=0.137) was not significant predictors of TC.  
 Therefore, I further analyzed each predictors of its relations to the TC.  
+
+```{r}
+fit = lm(TD_norm ~ GDP_norm+TC_norm+HDI_norm+POP, data = df.lastdate)
+HGa_n <- aov(fit) %>% summary()
+
+HGa_n
+
+fit = lm(TD_norm ~ GDP_norm+HDI_norm+POP, data = df.lastdate)
+HGB_n <- aov(fit) %>% summary()
+
+HGB_n
+
+fit = lm(TC_norm ~ GDP_norm+HDI_norm+POP, data = df.lastdate)
+HGC_n <- aov(fit) %>% summary()
+
+fit
+
+HGC_n
+```
+
 
 ```{r}
 #head(df.covid)
@@ -272,7 +337,48 @@ Interesting result shown in the graph of relationship between TCPOP and GDPCAP i
 
 Beyond that I thought that better infrastructure would prevent people from dying even if they are infected by their covid but the result did not come out as I expected. Maybe this is due to the fact that there is no active way of treating covid yet.  
 
+```{r}
+#head(df.covid)
 
+# classic plot :
+p1 <- ggplot(df.lastdate, aes(x=GDP_norm, y=HDI_norm, color = "#42e0f5", size=1)) +
+      geom_point(alpha = 1, size = 1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_classic()+
+      theme(legend.position ="none")
+  
+ 
+
+
+
+# classic plot :
+p2 <- ggplot(df.lastdate, aes(x=TC_norm, y=TD_norm, color = "#42e0f5", size=1)) +
+      geom_point(alpha = 1, size = 1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_classic()+
+      theme(legend.position ="none")
+
+
+
+p3 <- ggplot(df.lastdate, aes(x=GDP_norm, y=TC_norm, color = "#42e0f5")) +
+      geom_point(alpha = 1, size = 1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_classic()+
+      theme(legend.position = "none")
+
+p4 <- ggplot(df.lastdate, aes(x=GDP_norm, y=TD_norm, color = "#42e0f5")) +
+      geom_point(alpha = 1, size = 1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_classic()+
+      theme(legend.position = "none")
+
+
+p1 + p2 + p3 +p4
+  plot_layout(ncol=1) &
+  theme(
+      plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
+     ) 
+```
 
 ```{r}
 fit = lm(HDI ~ 1 + GDPCAP, data = df.lastdate)
@@ -299,6 +405,26 @@ TC and TD(F(1, 159) = 1189, p < 0.001) showed significant linear relationship as
 TC and GDPCAP(F(1, 159) = 1705, p < 0.001) surprisingly showed significant linear relationship contrary to what was expected since many will think higher GDPCAP countries would have advanced healthcare system which would lead to lower cases of covid.  
 
 
+```{r}
+fit = lm(HDI_norm ~ 1 + GDP_norm, data = df.lastdate)
+HG_nsum <- aov(fit) %>% summary()
+
+fit = lm(TC_norm ~ 1 + TD_norm, data = df.lastdate)
+
+CD_nsum <- aov(fit)%>%summary()
+
+fit = lm(TC_norm ~ 1 + GDP_norm, data = df.lastdate)
+
+CG_nsum <- aov(fit)%>%summary()
+
+HG_nsum
+
+CD_nsum
+
+CG_nsum
+```
+
+
 
 ```{r}
 test1<-cor.test(df.covid$TC,df.covid$TD)
@@ -308,284 +434,6 @@ test2<-cor.test(df.covid$GDPCAP,df.covid$HDI)
 ```{r}
 test1
 ```
-
-```{r}
- df.covid <- df.covid%>%filter(TC>0, GDPCAP>0)
-# classic plot :
-p <- ggplot(df.covid, aes(x=GDPCAP, y=TC, color = "#42e0f5", size=1)) +
-      geom_point() +
-      theme(legend.position="none")
- 
-# Set relative size of marginal plots (main plot 10x bigger than marginals)
-p1 <- ggMarginal(p, type="histogram", size=5)
-p1
-
-```
-
-```{r}
-
-```
-
-
-RELATION BETWEEN GDPCAP AND TC
-
-```{r}
-df.covid1 <- df.covid%>% filter(GDPCAP>0)
-p <- ggplot(df.covid1, aes(x=GDPCAP, y=TC, color = "#42e0f5", size=1)) +
-      geom_point() +
-      theme(legend.position="none")
-p
-```
-
-```{r}
-p <- ggMarginal(p, type="histogram", size=5)
-p
-```
-
-```{r}
-cor.test(df.covid$TC, df.covid$GDPCAP)
-```
-
-```{r}
-fit = lm(TC ~ 1 + GDPCAP, data = df.covid1)
-
-fit%>%summary()
-```
-
-
-
-RELATION BETWEEN GDPCAP AND TC
-
-```{r}
-
-```
-
-
-
-
-RELATION BETWEEN POP AND GDPCAP
-
-```{r}
-df.covidgdp <- df.covid %>% filter(GDPCAP>0)
-
-fit = lm(TC ~ 1 + GDPCAP, data = df.covidgdp)
-
-fit%>%summary()
-
-p <- ggplot(df.covidgdp, aes(x=POP, y=GDPCAP, color = "#42e0f5")) +
-      geom_point(alpha = 0.3, size = 0.1) +
-      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
-  theme_bw()
-p
-```
-
-
-RELATION BETWEEN GDPCAP AND TD
-
-```{r}
-df.covidgf <- df.covid %>% filter(GDPCAP>0)
-
-fit = lm(TD ~ 1 + GDPCAP, data = df.covidgf)
-
-fit%>%summary()
-
-p <- ggplot(df.covidgf, aes(x=GDPCAP, y=TD, color = "#42e0f5")) +
-      geom_point(alpha = 0.3, size = 0.1) +
-      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
-      theme_bw()
-p
-```
-
-
-
-RELATION BETWEEN POP AND TC
-
-```{r}
-p <- ggplot(df.covid, aes(x=POP, y=TC, color = "#42e0f5", size=1)) +
-      geom_point() +
-      theme(legend.position="none")
- 
-# Set relative size of marginal plots (main plot 10x bigger than marginals)
-p1 <- ggMarginal(p, type="histogram", size=5)
- 
-# Custom marginal plots:
-#p2 <- ggMarginal(p, type="histogram", fill = "slateblue", xparams = list(  bins=10))
- 
-# Show only marginal plot for x axis
-#p3 <- ggMarginal(p, margins = 'x', color="purple", size=4)
-
-p1
-```
-
-```{r}
-
-```
-
-```{r}
-fit = lm(TC ~ 1 + POP, data = df.covid)
-
-fit%>%summary()
-```
-
-
-RELATION BETWEEN STI AND TC
-
-```{r}
-df.covidsf <- df.covid%>% filter(STI>0)
-```
-
-
-```{r}
-p <- ggplot(df.covidsf, aes(x=STI, y=TC, color = "#42e0f5", size=1)) +
-      geom_point() +
-      theme(legend.position="none")
- 
-# Set relative size of marginal plots (main plot 10x bigger than marginals)
-p1 <- ggMarginal(p, type="histogram", size=5)
- 
-# Custom marginal plots:
-#p2 <- ggMarginal(p, type="histogram", fill = "slateblue", xparams = list(  bins=10))
- 
-# Show only marginal plot for x axis
-#p3 <- ggMarginal(p, margins = 'x', color="purple", size=4)
-
-p1
-```
-
-```{r}
-cor.test(df.covid$STI, df.covid$TC)
-```
-
-```{r}
-fit = lm(TC ~ 1 + STI, data = df.covid)
-
-fit%>%summary()
-```
-
-```{r}
-fit = lm(TC ~ 1 +STI, data = df.covidsf)
-
-fit%>%summary()
-
-p <- ggplot(df.covid, aes(x=STI, y=TC, color = "#42e0f5")) +
-      geom_point(alpha = 0.3, size = 0.1) +
-      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
-  theme_bw()
-p
-```
-
-
-RELATION BETWEEN STI AND GDPCAP
-```{r}
-df.covidsgf <- df.covid%>% filter(GDPCAP>0)
-```
-
-
-```{r}
-p <- ggplot(df.covidsgf, aes(x=STI, y=GDPCAP, color = "#42e0f5", size=1)) +
-      geom_point() +
-      theme(legend.position="none")
- 
-# Set relative size of marginal plots (main plot 10x bigger than marginals)
-p1 <- ggMarginal(p, type="histogram", size=5)
- 
-# Custom marginal plots:
-#p2 <- ggMarginal(p, type="histogram", fill = "slateblue", xparams = list(  bins=10))
- 
-# Show only marginal plot for x axis
-#p3 <- ggMarginal(p, margins = 'x', color="purple", size=4)
-
-p1
-```
-
-```{r}
-cor.test(df.covid$STI, df.covid$GDPCAP)
-```
-
-```{r}
-fit = lm(TC ~ 1 + STI, data = df.covid)
-
-fit%>%summary()
-```
-
-```{r}
-fit = lm(TC ~ 1 + STI, data = df.covidsgf)
-
-fit%>%summary()
-
-p <- ggplot(df.covidsgf, aes(x=STI, y=TC, color = "#42e0f5")) +
-      geom_point(alpha = 0.3, size = 0.1) +
-      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
-  theme_bw()
-p
-```
-
-
-
-```{r}
-fit = lm(TC ~ 1 + GDPCAP, data = df.covidsgf)
-
-fit%>%summary()
-
-p <- ggplot(df.covidsgf, aes(x=STI, y=GDPCAP, color = "#42e0f5")) +
-      geom_point(alpha = 0.3, size = 0.1) +
-      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
-  theme_bw()
-p
-```
-
-```{r}
-df.covidstf <- df.covid%>% filter(STI>0)
-```
-
-
-```{r}
-p <- ggplot(df.covidstf, aes(x=STI, y=TD, color = "#42e0f5", size=1)) +
-      geom_point() +
-      theme(legend.position="none")
- 
-# Set relative size of marginal plots (main plot 10x bigger than marginals)
-p1 <- ggMarginal(p, type="histogram", size=5)
- 
-# Custom marginal plots:
-#p2 <- ggMarginal(p, type="histogram", fill = "slateblue", xparams = list(  bins=10))
- 
-# Show only marginal plot for x axis
-#p3 <- ggMarginal(p, margins = 'x', color="purple", size=4)
-
-p1
-```
-
-```{r}
-cor.test(df.covid$STI, df.covid$TD)
-```
-
-```{r}
-fit = lm(TC ~ 1 + GDPCAP, data = df.covidsgf)
-
-fit%>%summary()
-
-p <- ggplot(df.covidsgf, aes(x=STI, y=TD, color = "#42e0f5")) +
-      geom_point(alpha = 0.3, size = 0.1) +
-      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
-  theme_bw()
-p
-```
-
-
-```{r}
-fit = lm(TC/POP ~ 1 + GDPCAP+HDI+STI, data = df.lastdate)
-
-fit%>%summary()
-```
-
-
-
-
-
-
-
-
 
 
 __q14__ Summarize each of the numeric variables you will use to test your hypothesis with the central tendency and standard deviation. For categorical/character variables, summarize with the frequency in each category 
@@ -603,38 +451,16 @@ ________________________________________________________________________________
 
 
 
-# Part 3
-
-The goals of Part 3 of your project are to:
-
-* Test your hypothesis using the appropriate statistical tests. 
-*	Estimate how large the effect is by using one of the following: effect size, confidence intervals, Bayes factors
-*	Visualize your results, including one figure that summarizes your primary result. 
-*	Interpret your results in writing.
-
-
-## Hypothesis testing
-
-In Milestone 1, you identified your hypothesis for your project question. Please restate your hypothesis below (it's okay if it changed _prior_ to hypothesis testing):
-
-
-
-
 __q15__ What is the null hypothesis?
 
-_Black and White individuals are equally likely to be searched when stopped by the police. In other words, race and being searched are independent of each other_
+Total cases of covid has no relationship between Gross Domestic Product, Human Develop Index of the country. This means that number of covid cases and GDP, HDI are independent of each other.
 
 
 
 __q16__ Test your hypothesis using the appropriate statistical tests. Points to consider: Are your variables continuous or categorical? If your variables are continuous, are they normally distributed? If one or more of your variables is categorical, how many categories are there?
 
-```{r}
+Total Cases, GDP, and HDI are continuous variables. By plotting histogram for each variable, they are not normally distributed, all of them is left skewed. HDI has most left skewed result, followed by GDP and Total Cases. Although GDP and Total Cases show a slight left skewness, overall they are normally distributed. To correct the left skewness, we used bestNormalize function to convert our orignal data to normalized data.
 
-```
-
-__q17__ In writing, interpret the results of your hypothesis test(s). Move beyond the p-value and where the test is "significant". For example, if you compared means, describe the size of the means in relation to each other; if you use a chi-square test, create a contingency table and describe the relative proportions; if you used regression, interpret the meaning of the intercept and slope(s). Overall, demonstrate that you understand what the test is estimating. 
-
-_Example_: _Using a chi-square test, we tested the hypothesis that Black individuals are more likely to be searched when stopped by the police than are white individuals. Specifically, the chi-square test compared the observed proportions of Black and White individuals who were and were not searched to the proportions expected under the null hypothesis that race and being searched are independent. Results of the chi-square test indicated that the data were unlikely under the null hypothesis, X2(df = 1) = 828.3, p < .001. Specifically, White individuals were searched less than expected under the null hypothesis whereas Black individuals were searched more often than expected under the null hypothesis.Therefore, we can reject the null hypothesis that Black and White individuals are equally likely to be searched when stopped by the police._ 
 
 # Effect size 
 
@@ -646,15 +472,6 @@ __q18__ Estimate how large the effect(s) are. Regardless of whether your hypothe
 
 _Example_: _We computed the odds-ratio for the probability of Black individuals being searched by the police versus the probability of White individuals being searched by the police. Black individuals were 2.59 times more likely to be searched by the police than were White individuals._
 
-__q19__ 
-
-Use `ggplot()` to visualize your results. Include at least one plot that graphically depicts the primary result of your hypothesis test. Show the variability in the data: if you have a categorical variable, use a boxplot or violin plot; if you have continuous variables, show both the scatter plot (geom_point) and the appropriate trendline. 
-
-Make your primary plot "presentation quality": 1) Provide a title that describes the main take-away of the plot (i.e., Black individuals are disproportionately searched by the police _NOT_ Proportions of Black and White individual searched by the police), 2) Label your axes, 3) Adjust the axis text if necessary by changing the "breaks" using one of the scale_ functions (e.g., scale_x_continuous, scale_x_discrete), 4) if one of your variables is categorical, order the data logically using fct_reorder(), 5) Consider adding reference lines using geom_vline or geom_hline. 
-
-```{r}
-
-```
 
 
 
