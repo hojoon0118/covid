@@ -1,6 +1,6 @@
 ---
-title: "My Project"
-author: "hi"
+title: "Higher GDP, Covid becomes serious"
+author: "Hojoon Kim"
 output:
   html_document:
     df_print: paged
@@ -15,21 +15,7 @@ output:
 ```
 
 
-
-
-# Part 1
-
-The goals of Part 1 of your project are to:
-
-* Identify your question and explain why you are asking it
-* Identify, briefly describe, and read in your dataset to R
-* Identify and describe the variables you will use to test your hypothesis.
-* Identify how you will need to clean/wrangle your dataset.
-* Identify limitations of your project as a whole. 
-
 ## Environment set up 
-
-__q1__ Set up your environment by loading the needed packages and saving the file path(s) to your data as values in your environment.
 
 ```{r warning=FALSE, message=FALSE}
 #Libaries
@@ -41,6 +27,8 @@ library("ggExtra")
 library("patchwork")# for making figure panels
 #library("report")
 library(bestNormalize)
+
+# Setting up the environment before analyzing data.
 ```
 
 ## Project question
@@ -141,6 +129,11 @@ df.lastdate <- df.covid %>%
 df.lastdate$GDPCAP%>%min()
 ```
 
+```{r}
+# df.lastdate %>% mutate(z_HDI = (TC-mean(TC))/sd(TC))
+df.lastdate <- df.lastdate %>% mutate(z_HDI = (HDI-mean(df.lastdate $ HDI))/sd(df.lastdate $ HDI), z_TC = (HDI-mean(df.lastdate $ TC))/sd(df.lastdate $ TC), z_TD = (TD-mean(df.lastdate $ TD))/sd(df.lastdate $ TD), z_STI = (STI-mean(df.lastdate $ STI))/sd(df.lastdate $ STI), z_POP = (POP-mean(df.lastdate $ POP))/sd(df.lastdate $ POP), z_GDPCAP = (GDPCAP-mean(df.lastdate $ GDPCAP))/sd(df.lastdate $ GDPCAP))
+
+```
 
 
 ```{r}
@@ -208,6 +201,7 @@ df.lastdate$GDP_norm <- GN
 df.lastdate$TC_norm <- TC_N
 df.lastdate$TD_norm <- TD_N
 ```
+
 ```{r}
 #Plotting histogram of normalized HDI, GDP, TC, TD
 p1 <- df.lastdate %>%
@@ -231,49 +225,7 @@ p1 + p2 +p3 + p4
       plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
      ) 
 ```
-After the normalization procedure of HDI, GDPCAP, TCPOP, TDPOP, each variable's histogram became left skewed to normally distributed graph. Due to the normalization procedures, values of x-axis and y-axis changed, especially numbers of x-axis became 0 centered.
-
-```{r}
-fit = lm(TDPOP ~ GDPCAP+TCPOP+HDI+POP, data = df.lastdate)
-HGa <- aov(fit) %>% summary()
-
-HGa
-
-fit = lm(TDPOP ~ GDPCAP+HDI+POP, data = df.lastdate)
-HGB <- aov(fit) %>% summary()
-
-HGB
-
-fit = lm(TCPOP ~ GDPCAP+HDI+POP, data = df.lastdate)
-HGC <- aov(fit) %>% summary()
-
-fit
-
-HGC
-```
-A multiple linear regression was calculated to predict TC based on GDPCAP, HDI, and POP. A significant regression equation was found (F(3, 157) = `r HGC$f.value`, `r HGC$p.value`). Participants' predicted TC is equal to 0.01985 * GDPCAP + 0.23022 * HDI + 0.02431 * POP - 0.13525.  
-GDPCAP(f= 36.217, p < 0.001) and POP(f = 20.339, p < 0.001) were significant predictors of TC. While HDI(f = 2.234, p=0.137) was not significant predictors of TC.  
-Therefore, I further analyzed each predictors of its relations to the TC.  
-
-```{r}
-fit = lm(TD_norm ~ GDP_norm+TC_norm+HDI_norm+POP, data = df.lastdate)
-HGa_n <- aov(fit) %>% summary()
-
-HGa_n
-
-fit = lm(TD_norm ~ GDP_norm+HDI_norm+POP, data = df.lastdate)
-HGB_n <- aov(fit) %>% summary()
-
-HGB_n
-
-fit = lm(TC_norm ~ GDP_norm+HDI_norm+POP, data = df.lastdate)
-HGC_n <- aov(fit) %>% summary()
-
-fit
-
-HGC_n
-```
-
+I performed two versions of statistical analysis. The first analysis involved unnormalized variables while second analysis used normalized variables. Two different versions showed similar results therefore I only present results from the unnormailzed version of analysis.
 
 ```{r}
 #head(df.covid)
@@ -298,13 +250,13 @@ p2 <- ggplot(df.lastdate, aes(x=TC, y=TD, color = "#42e0f5", size=1)) +
 
 
 
-p3 <- ggplot(df.lastdate, aes(x=GDPCAP, y=TCPOP, color = "#42e0f5")) +
+p3 <- ggplot(df.lastdate, aes(x=GDPCAP, y=TC, color = "#42e0f5")) +
       geom_point(alpha = 1, size = 1) +
       geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
   theme_classic()+
       theme(legend.position = "none")
 
-p4 <- ggplot(df.lastdate, aes(x=GDPCAP, y=TDPOP, color = "#42e0f5")) +
+p4 <- ggplot(df.lastdate, aes(x=GDPCAP, y=TD, color = "#42e0f5")) +
       geom_point(alpha = 1, size = 1) +
       geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
   theme_classic()+
@@ -317,6 +269,53 @@ p1 + p2 + p3 +p4
       plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
      ) 
 ```
+
+After the normalization procedure of HDI, GDPCAP, TCPOP, TDPOP, each variable's histogram became left skewed to normally distributed graph. Due to the normalization procedures, values of x-axis and y-axis changed, especially numbers of x-axis became 0 centered.
+
+```{r}
+fit = lm(TDPOP ~ GDPCAP+TCPOP+HDI+POP, data = df.lastdate)
+HGa <- aov(fit) %>% summary()
+
+HGa
+
+fit = lm(TDPOP ~ GDPCAP+HDI+POP, data = df.lastdate)
+HGB <- aov(fit) %>% summary()
+
+HGB
+
+fit = lm(TCPOP ~ GDPCAP+HDI+POP, data = df.lastdate)
+HGC <- aov(fit) %>% summary()
+
+fit
+
+HGC
+```
+A multiple linear regression was calculated to predict TC based on GDPCAP, HDI, and POP. A significant regression equation was found (F(3, 157) = `r HGC$f.value`, `r HGC$p.value`). Participants' predicted TC is equal to 0.01985 * GDPCAP + 0.23022 * HDI + 0.02431 * POP - 0.13525.  
+GDPCAP(f= 36.217, p < 0.001) and POP(f = 20.339, p < 0.001) were significant predictors of TC. While HDI(f = 2.234, p=0.137) was not significant predictors of TC.  
+Therefore, I further analyzed each predictors of its relations to the TC.  
+
+
+```{r eval=FALSE}
+fit = lm(TD_norm ~ GDP_norm+TC_norm+HDI_norm+POP, data = df.lastdate)
+HGa_n <- aov(fit) %>% summary()
+
+HGa_n
+
+fit = lm(TD_norm ~ GDP_norm+HDI_norm+POP, data = df.lastdate)
+HGB_n <- aov(fit) %>% summary()
+
+HGB_n
+
+fit = lm(TC_norm ~ GDP_norm+HDI_norm+POP, data = df.lastdate)
+HGC_n <- aov(fit) %>% summary()
+
+fit
+
+HGC_n
+```
+
+
+
 
 
 ```{r}
@@ -337,48 +336,6 @@ Interesting result shown in the graph of relationship between TCPOP and GDPCAP i
 
 Beyond that I thought that better infrastructure would prevent people from dying even if they are infected by their covid but the result did not come out as I expected. Maybe this is due to the fact that there is no active way of treating covid yet.  
 
-```{r}
-#head(df.covid)
-
-# classic plot :
-p1 <- ggplot(df.lastdate, aes(x=GDP_norm, y=HDI_norm, color = "#42e0f5", size=1)) +
-      geom_point(alpha = 1, size = 1) +
-      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
-  theme_classic()+
-      theme(legend.position ="none")
-  
- 
-
-
-
-# classic plot :
-p2 <- ggplot(df.lastdate, aes(x=TC_norm, y=TD_norm, color = "#42e0f5", size=1)) +
-      geom_point(alpha = 1, size = 1) +
-      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
-  theme_classic()+
-      theme(legend.position ="none")
-
-
-
-p3 <- ggplot(df.lastdate, aes(x=GDP_norm, y=TC_norm, color = "#42e0f5")) +
-      geom_point(alpha = 1, size = 1) +
-      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
-  theme_classic()+
-      theme(legend.position = "none")
-
-p4 <- ggplot(df.lastdate, aes(x=GDP_norm, y=TD_norm, color = "#42e0f5")) +
-      geom_point(alpha = 1, size = 1) +
-      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
-  theme_classic()+
-      theme(legend.position = "none")
-
-
-p1 + p2 + p3 +p4
-  plot_layout(ncol=1) &
-  theme(
-      plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
-     ) 
-```
 
 ```{r}
 fit = lm(HDI ~ 1 + GDPCAP, data = df.lastdate)
