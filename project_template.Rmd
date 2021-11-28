@@ -27,6 +27,7 @@ library("ggExtra")
 library("patchwork")# for making figure panels
 #library("report")
 library(bestNormalize)
+library(dplyr)
 
 # Setting up the environment before analyzing data.
 ```
@@ -120,6 +121,18 @@ REMOVED DATA POINTS THAT ARE BELOW ZERO BECAUSE WE EXPECT TO HAVE POSITIVE NUMBE
 ```{r}
 df.covid <- df.covid %>% filter(GDPCAP>0, STI>0, HDI>0, POP>0, TC>=0, TD>=0)
 ```
+
+```{r}
+# Most basic bubble plot
+df.covid$DATE <- as.Date(df.covid$DATE)
+p1 <- ggplot(df.covid %>% filter(COUNTRY == "United States"| COUNTRY == "China"), aes(x=DATE, y=TC, color = COUNTRY)) +
+  geom_line() + 
+  xlab("")
+p1 + scale_x_date(date_breaks = "1 month", date_labels = "%m")
+
+
+```
+
 
 filtered the data only to have last date because total case and total death are accumulative.
 ```{r}
