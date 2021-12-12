@@ -1,5 +1,5 @@
 ---
-title: "Higher GDP, Covid becomes serious"
+title: "Higher GDP is related to severe covid outcomes"
 author: "Hojoon Kim"
 output:
   html_document:
@@ -132,6 +132,17 @@ p1 + scale_x_date(date_breaks = "1 month", date_labels = "%m")
 
 
 ```
+
+
+
+```{r}
+df.covid <- df.covid %>% group_by(COUNTRY) %>% mutate(DIFF = c(0,diff(TC)))
+p1 <- ggplot(df.covid %>% filter(COUNTRY == "United States"| COUNTRY == "China"), aes(x=DATE, y=DIFF, color = COUNTRY)) +
+  geom_line() + 
+  xlab("")
+p1 + scale_x_date(date_breaks = "1 month", date_labels = "%m")
+```
+
 
 
 filtered the data only to have last date because total case and total death are accumulative.
