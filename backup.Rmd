@@ -511,3 +511,68 @@ fit = lm(TC/POP ~ 1 + GDPCAP+HDI+STI, data = df.lastdate)
 
 fit%>%summary()
 ```
+
+```{r}
+#head(df.covid)
+
+# classic plot :
+p1 <- ggplot(df.lastdate, aes(x=GDP_norm, y=HDI_norm, color = "#42e0f5", size=1)) +
+      geom_point(alpha = 1, size = 1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_classic()+
+      theme(legend.position ="none")
+  
+ 
+
+
+
+# classic plot :
+p2 <- ggplot(df.lastdate, aes(x=TC_norm, y=TD_norm, color = "#42e0f5", size=1)) +
+      geom_point(alpha = 1, size = 1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_classic()+
+      theme(legend.position ="none")
+
+
+
+p3 <- ggplot(df.lastdate, aes(x=GDP_norm, y=TC_norm, color = "#42e0f5")) +
+      geom_point(alpha = 1, size = 1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_classic()+
+      theme(legend.position = "none")
+
+p4 <- ggplot(df.lastdate, aes(x=GDP_norm, y=TD_norm, color = "#42e0f5")) +
+      geom_point(alpha = 1, size = 1) +
+      geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
+  theme_classic()+
+      theme(legend.position = "none")
+
+
+p1 + p2 + p3 +p4
+  plot_layout(ncol=1) &
+  theme(
+      plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
+     ) 
+```
+
+```{r}
+dus <- df.covid %>% filter(COUNTRY == "China")
+d1 <- diff(dus$TC)
+x2 <- dus$DATE[1:length(dus$DATE)-1]
+d2 <- data.frame(d1)
+dp1 <- ggplot(d2, aes(x=x2 ,y=d1)) +
+  geom_line() + 
+  xlab("")
+dp1
+```
+
+```{r}
+dus <- df.covid %>% filter(COUNTRY == "United States")
+d1 <- diff(dus$TC)
+x2 <- dus$DATE[1:length(dus$DATE)-1]
+d2 <- data.frame(d1)
+dp1 <- ggplot(d2, aes(x=x2 ,y=d1)) +
+  geom_line() + 
+  xlab("")
+dp1
+```

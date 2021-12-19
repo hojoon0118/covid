@@ -82,93 +82,43 @@ GDPCAP is a economic snapshot of a country, used to estimate the size of an econ
 HDI(Human Development Index) is average achievement in key dimensions of human development.
 TC&TD is total cases and total death meaning how many people got COVID-19 and died from COVID-19.
 
-## Data challenges
-
-__q10__ What will you do to clean and wrangle your dataset to make it appropriate for analysis? For example, will you remove certain columns or rows? Do you need to rename or recode variables? Do you need to create new variables? 
-
-I will remove the code variable because I already have the name of the country for the code name variable. It is not useful. For the second I am goijng to remove the date variable becuase I will not use date variable and it will not affect the result of the research.
-
-## Project limitations
-
-__q11__ Describe at least two limitations of your data that may make it challenging to draw particular conclusions or interpret your findings (e.g., consider who is in the sample and the design of the study)?
-
 ____________________________________________________________________________________________
-
-# Part 2
-
-The goals of Part 2 of your project are to:
-
-* Clean and wrangle your data and describe this process. 
-* Visualize and summarize each of your variables and interpret what you see.  
 
 
 # Data cleaning and wrangling
 
-__q12__ In Part 1, you described the necessary data cleaning and wrangling you would need to do to make your data appropriate for analysis (__q10__). Perform this data cleaning below, as well as any additional cleaning/wrangling you need to do. For each data cleaning step, insert a separate chunk of code. For each step, explain why you are doing it in the whitespace below the chunk
-
 ```{r}
 df.covid <- df.covid[ ,-1]
 ```
-I erased CODE column in the data df.covid since it is redundant information with variable COUNTRY and I will not use this variable.
+I erased CODE column in the data df.covid since it is redundant information with variable COUNTRY and I will use COUNTRY variable instead of CODE variable.
 
-normalized total case(TC) and total death(TD) according to population(POP)
 ```{r}
 df.covid <- df.covid %>% mutate(TCPOP = TC/POP, 
                     TDPOP = TD/POP)
 ```
+normalized total case(TC) and total death(TD) according to population(POP).
 
-REMOVED DATA POINTS THAT ARE BELOW ZERO BECAUSE WE EXPECT TO HAVE POSITIVE NUMBERS FOR GROSS DOMESTIC PRODUCT PER CAPITA (GDPCAP), SEXUALLY TRANSMITTED INDEX(STI), HUMAN DEVELOPMENT INDEX (HDI), POPULATION(POP).
 ```{r}
 df.covid <- df.covid %>% filter(GDPCAP>0, STI>0, HDI>0, POP>0, TC>=0, TD>=0)
 ```
-
-```{r}
-# Most basic bubble plot
-df.covid$DATE <- as.Date(df.covid$DATE)
-p1 <- ggplot(df.covid %>% filter(COUNTRY == "United States"| COUNTRY == "China"), aes(x=DATE, y=TC, color = COUNTRY)) +
-  geom_line() + 
-  xlab("")
-p1 + scale_x_date(date_breaks = "1 month", date_labels = "%m")
+Removed data points that are below zero because we expect to have positive numbers for Gross Domestic Product per Capita (GDPCAP), Sexually Transmitted Index(STI), Human Development Index(HDI), Population (POP).
 
 
-```
-
-
-
-```{r}
-df.covid <- df.covid %>% group_by(COUNTRY) %>% mutate(DIFF = c(0,diff(TC)))
-p1 <- ggplot(df.covid %>% filter(COUNTRY == "United States"| COUNTRY == "China"), aes(x=DATE, y=DIFF, color = COUNTRY)) +
-  geom_line() + 
-  xlab("")
-p1 + scale_x_date(date_breaks = "1 month", date_labels = "%m")
-```
-
-
-
-filtered the data only to have last date because total case and total death are accumulative.
 ```{r}
 df.lastdate <- df.covid %>%
   group_by(COUNTRY) %>% 
   slice(which.max(as.Date(DATE)))
 df.lastdate$GDPCAP%>%min()
 ```
+filtered the data only to have last date because total case and total death are accumulative.
 
 ```{r}
-# df.lastdate %>% mutate(z_HDI = (TC-mean(TC))/sd(TC))
-df.lastdate <- df.lastdate %>% mutate(z_HDI = (HDI-mean(df.lastdate $ HDI))/sd(df.lastdate $ HDI), z_TC = (HDI-mean(df.lastdate $ TC))/sd(df.lastdate $ TC), z_TD = (TD-mean(df.lastdate $ TD))/sd(df.lastdate $ TD), z_STI = (STI-mean(df.lastdate $ STI))/sd(df.lastdate $ STI), z_POP = (POP-mean(df.lastdate $ POP))/sd(df.lastdate $ POP), z_GDPCAP = (GDPCAP-mean(df.lastdate $ GDPCAP))/sd(df.lastdate $ GDPCAP))
-
-```
-
-
-```{r}
+# looking at the first 10 data of lastdate
 df.lastdate %>% head(10)
 ```
 
 
 # Data visualization and summary 
-
-__q13__ Use `ggplot()` to create histograms (`geom_histogram` or `geom_col`) showing the distributions of each of the variables you are using to test your hypothesis. Only plot one variable per chunk of code. At the end, describe the distribution of each variable in terms of whether it is normal, skewed, bimodal, etc. 
-
 
 ```{r}
 p1 <- df.lastdate %>%
@@ -225,6 +175,8 @@ df.lastdate$GDP_norm <- GN
 df.lastdate$TC_norm <- TC_N
 df.lastdate$TD_norm <- TD_N
 ```
+Normalized each variables using bestNormalize function and saved into another variables.
+
 
 ```{r}
 #Plotting histogram of normalized HDI, GDP, TC, TD
@@ -254,25 +206,17 @@ I performed two versions of statistical analysis. The first analysis involved un
 ```{r}
 #head(df.covid)
 
-# classic plot :
 p1 <- ggplot(df.lastdate, aes(x=GDPCAP, y=HDI, color = "#42e0f5", size=1)) +
       geom_point(alpha = 1, size = 1) +
       geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
   theme_classic()+
       theme(legend.position ="none")
-  
- 
 
-
-
-# classic plot :
 p2 <- ggplot(df.lastdate, aes(x=TC, y=TD, color = "#42e0f5", size=1)) +
       geom_point(alpha = 1, size = 1) +
       geom_smooth(method = "lm", se = T, color = "blue", fill="black", size = 1) +
   theme_classic()+
       theme(legend.position ="none")
-
-
 
 p3 <- ggplot(df.lastdate, aes(x=GDPCAP, y=TC, color = "#42e0f5")) +
       geom_point(alpha = 1, size = 1) +
@@ -293,20 +237,34 @@ p1 + p2 + p3 +p4
       plot.title = element_text(size=20), panel.background = element_blank(), axis.line = element_line(colour = "grey")
      ) 
 ```
+Plotting the linear graph of each data with each variables, we could see the relationship between two variables we chose.
+Relation between GDPCAP and HDI was positive meaning that as HDI gets bigger, GDPCAP also gets bigger.
+Using another variables TC and TD, I found that it had similar relation as the former case.
+In case of using TC and GDPCAP, it had positive relationship as before but it had smaller slope than former two graphs meaning that growing trend of TC is lower than GDPCAP.Also the points of this case are more scattered than the former cases.
+For the last case, TD and GDPCAP, it was similar to the 3rd case and had similar slope.
 
-After the normalization procedure of HDI, GDPCAP, TCPOP, TDPOP, each variable's histogram became left skewed to normally distributed graph. Due to the normalization procedures, values of x-axis and y-axis changed, especially numbers of x-axis became 0 centered.
 
 ```{r}
 fit = lm(TDPOP ~ GDPCAP+TCPOP+HDI+POP, data = df.lastdate)
 HGa <- aov(fit) %>% summary()
 
-HGa
+#HGa
+```
 
+
+```{r}
 fit = lm(TDPOP ~ GDPCAP+HDI+POP, data = df.lastdate)
 HGB <- aov(fit) %>% summary()
 
-HGB
+fit
 
+HGB
+```
+A multiple linear regression was calculated to predict TC based on GDPCAP, HDI, and POP. A significant regression equation was found (F(3, 157) = `r HGB$f.value`, `r HGB$p.value`). Participants' predicted TC is equal to -0.003344 * GDPCAP + 0.404348 * HDI + 0.038721 * POP - 0.690669.  
+GDPCAP(f= 26.59, p < 0.001) and POP(f = 80.69, p < 0.001) were significant predictors of TC. While HDI(f = 7.20, p=0.00807) was not significant predictors of TC.  
+
+
+```{r}
 fit = lm(TCPOP ~ GDPCAP+HDI+POP, data = df.lastdate)
 HGC <- aov(fit) %>% summary()
 
@@ -314,32 +272,9 @@ fit
 
 HGC
 ```
-A multiple linear regression was calculated to predict TC based on GDPCAP, HDI, and POP. A significant regression equation was found (F(3, 157) = `r HGC$f.value`, `r HGC$p.value`). Participants' predicted TC is equal to 0.01985 * GDPCAP + 0.23022 * HDI + 0.02431 * POP - 0.13525.  
+Similar to the former analysis, calculating multiple linear regression to predict TC based on GDPCAP, HDI, and POP. A significant regression equation was found (F(3, 157) = `r HGC$f.value`, `r HGC$p.value`). Participants' predicted TC is equal to 0.01985 * GDPCAP + 0.23022 * HDI + 0.02431 * POP - 0.13525.  
 GDPCAP(f= 36.217, p < 0.001) and POP(f = 20.339, p < 0.001) were significant predictors of TC. While HDI(f = 2.234, p=0.137) was not significant predictors of TC.  
 Therefore, I further analyzed each predictors of its relations to the TC.  
-
-
-```{r eval=FALSE}
-fit = lm(TD_norm ~ GDP_norm+TC_norm+HDI_norm+POP, data = df.lastdate)
-HGa_n <- aov(fit) %>% summary()
-
-HGa_n
-
-fit = lm(TD_norm ~ GDP_norm+HDI_norm+POP, data = df.lastdate)
-HGB_n <- aov(fit) %>% summary()
-
-HGB_n
-
-fit = lm(TC_norm ~ GDP_norm+HDI_norm+POP, data = df.lastdate)
-HGC_n <- aov(fit) %>% summary()
-
-fit
-
-HGC_n
-```
-
-
-
 
 
 ```{r}
@@ -349,16 +284,22 @@ c2 <- cor.test(df.lastdate$TC, df.lastdate$TD)
 
 c3 <- cor.test(df.lastdate$GDPCAP,df.lastdate$TCPOP)
 
+c1
+
+c2
+
+c3
+
 ```
 
 All 3 have significant relationship between each variables and all of it has positive slope which means that it has positive relationship.
 Pearson's correlation test revealed that GDPCAP and HDI has a strong positive relationship  p = `r c1$p.value %>% round(3)` r(`r c1$parameter`) = `r c1$estimate %>% round(3)` and similar positive relationship was found for TC and TD  p = `r c2$p.value %>% round(3)` r(`r c2$parameter`) = `r c2$estimate %>% round(3)` and lastly TCPOP and GDPCAP also showed positive relationship  p = `r c3$p.value %>% round(3)` r(`r c3$parameter`) = `r c3$estimate %>% round(3)` 
 As expected GDPCAP and HDI had strong positive relationship because HDI is measurement for Human development which is known to be a measure that is indicative of a country's wealth.
-More total cases leads to more total death due to covid as seen in above graph.
+More total cases leads to more total death due to COVID-19 as seen in above graph.
 
-Interesting result shown in the graph of relationship between TCPOP and GDPCAP is it has positive relationship between these two. I expected that as country has more wealth and have better healthcare system, people will get less exposure to covid. However the result is shown in opposite way which means that people get more exposed to covid as country has better social infrastructure.
+Interesting result shown in the graph of relationship between TCPOP and GDPCAP is it has positive relationship between these two. I expected that as country has more wealth and have better healthcare system, people will get less exposure to COVID-19. However the result is shown in opposite way which means that people get more exposed to covid as country has better social infrastructure.
 
-Beyond that I thought that better infrastructure would prevent people from dying even if they are infected by their covid but the result did not come out as I expected. Maybe this is due to the fact that there is no active way of treating covid yet.  
+Beyond that I thought that better infrastructure would prevent people from dying even if they are infected by their covid but the result did not come out as I expected. Maybe this is due to the fact that there is no active way of treating COVID-19 yet.  
 
 
 ```{r}
@@ -380,81 +321,54 @@ CDsum
 CGsum
 ```
 
-Individual predictors relationship were analyzed using linear models. HDI and GDP(F(1, 159) = 1705, p < 0.001) showed significant linear relationship, which confirms previous correlation result.
+Individual predictors relationship were analyzed using linear models. 
+HDI and GDP(F(1, 159) = 1705, p < 0.001) showed significant linear relationship, which confirms previous correlation result.
+
 TC and TD(F(1, 159) = 1189, p < 0.001) showed significant linear relationship as expected and it matches with the previous result.
 
-TC and GDPCAP(F(1, 159) = 1705, p < 0.001) surprisingly showed significant linear relationship contrary to what was expected since many will think higher GDPCAP countries would have advanced healthcare system which would lead to lower cases of covid.  
+TC and GDPCAP(F(1, 159) = 32.07, p < 0.001) surprisingly showed significant linear relationship contrary to what was expected since many will think higher GDPCAP countries would have advanced healthcare system which would lead to lower cases of COVID-19.  
 
+____________________________________________________________________________________________
 
-```{r}
-fit = lm(HDI_norm ~ 1 + GDP_norm, data = df.lastdate)
-HG_nsum <- aov(fit) %>% summary()
+Null hypothesis is that total cases of COVID-19 has no relationship between Gross Domestic Product, Human Develop Index of the country. This means that number of COVID-19 cases and GDP, HDI are independent of each other.
 
-fit = lm(TC_norm ~ 1 + TD_norm, data = df.lastdate)
-
-CD_nsum <- aov(fit)%>%summary()
-
-fit = lm(TC_norm ~ 1 + GDP_norm, data = df.lastdate)
-
-CG_nsum <- aov(fit)%>%summary()
-
-HG_nsum
-
-CD_nsum
-
-CG_nsum
-```
-
-
-
-```{r}
-test1<-cor.test(df.covid$TC,df.covid$TD)
-test2<-cor.test(df.covid$GDPCAP,df.covid$HDI)
-```
-
-```{r}
-test1
-```
-
-
-__q14__ Summarize each of the numeric variables you will use to test your hypothesis with the central tendency and standard deviation. For categorical/character variables, summarize with the frequency in each category 
-
-```{r}
-
-```
-
-```{r}
-
-```
-
+Total Cases, GDP, and HDI are continuous variables. By plotting histogram for each variable, they are not normally distributed, all of them is left skewed. HDI has most left skewed result, followed by GDP and Total Cases. Although GDP and Total Cases show a slight left skewness, overall they are normally distributed. To correct the left skewness, we used bestNormalize function to convert our original data to normalized data.
 
 ____________________________________________________________________________________________
 
 
-
-__q15__ What is the null hypothesis?
-
-Total cases of covid has no relationship between Gross Domestic Product, Human Develop Index of the country. This means that number of covid cases and GDP, HDI are independent of each other.
-
-
-
-__q16__ Test your hypothesis using the appropriate statistical tests. Points to consider: Are your variables continuous or categorical? If your variables are continuous, are they normally distributed? If one or more of your variables is categorical, how many categories are there?
-
-Total Cases, GDP, and HDI are continuous variables. By plotting histogram for each variable, they are not normally distributed, all of them is left skewed. HDI has most left skewed result, followed by GDP and Total Cases. Although GDP and Total Cases show a slight left skewness, overall they are normally distributed. To correct the left skewness, we used bestNormalize function to convert our orignal data to normalized data.
-
-
-# Effect size 
-
-__q18__ Estimate how large the effect(s) are. Regardless of whether your hypothesis test was "significant", quantify the size of the effect using measure of effect sizes (e.g., odds ratio or standardized residual for chi-square test; strength of the correlation coefficient; standardized mean difference [cohen's d] for comparing means; standardized beta and/or R-squared for linear regression), confidence intervals, and/or Bayes factors. Interpret the the effect size in writing. 
+## Exploratory analysis
 
 ```{r}
+df.covid$DATE <- as.Date(df.covid$DATE)
+p1 <- ggplot(df.covid %>% filter(COUNTRY == "United States"| COUNTRY == "China"), aes(x=DATE, y=TC, color = COUNTRY)) +
+  geom_line() + 
+  xlab("")
+p1 + scale_x_date(date_breaks = "1 month", date_labels = "%m")
 
 ```
+This is a comparison between the accumulative total cases of China and Unites States across time. At the beginning, China had more total cases but after March, United States started to exceed China's total cases and continued to grow. In February, China started not to increase its total cases. This maybe due to statistical error which can be hiding their data or true fact.
 
-_Example_: _We computed the odds-ratio for the probability of Black individuals being searched by the police versus the probability of White individuals being searched by the police. Black individuals were 2.59 times more likely to be searched by the police than were White individuals._
+```{r}
+df.covid <- df.covid %>% group_by(COUNTRY) %>% mutate(DIFF = c(0,diff(TC)))
+p1 <- ggplot(df.covid %>% filter(COUNTRY == "United States"| COUNTRY == "China"), aes(x=DATE, y=DIFF, color = COUNTRY)) +
+  geom_line() + 
+  xlab("")
+p1 + scale_x_date(date_breaks = "1 month", date_labels = "%m")
+```
+This is identical graph sharing data with former graph but not accumulative. Analyzing this data, in the beginning, COVID-19's total cases has been keep on increasing but as the time passed, cases by day has been getting smaller and eventually reaching near zero for the both countries.
 
 
+## Conclusion
 
+We found out that GDP and HDI have positive relationship between the Total Cases and the Total Death. To be specific, higher GDP and HDI, higher Total Cases and Total Death. This is not conclusion I have expected since usually people think that higher GDP countries can take care of pandemic situations very well so it could show that higher GDP or HDI countries have negative relationship with Total Cases and Total Deaths. The reason of this finding might be because higher GDP countries tend to have more people travelling which could make many people infected. This rapid increase of people getting infected could have exceeded capacity of higher GDP country's health facilities, leading to many people's infection or death. Moreover, higher GDP countries have the ability to investigate their country's situation more precisely and correctly than lower GDP countries. Lower GDP countries may have not diagnosed many of their infected people, leading to the result that higher GDP's country tend to have more total cases than countries that are not high.
 
+## Project limitations
 
+__q11__ Describe at least two limitations of your data that may make it challenging to draw particular conclusions or interpret your findings (e.g., consider who is in the sample and the design of the study)?
 
+There are some limitation and challenges for this current data set. 
+
+First of all, there are limitation to these data and there might be some data controlled. Some of the countries do not have enough technology to keep on track of COVID-19 and do not have enough infrastructure to decide whether patient has been infected or not. Also some countries might control their data to make it seem like their country is not infected and they have better facility to take care of patients than other higher GDP countries.  
+
+Second, GDP or HDI index for these data might not reflect characteristics of each countries. For example, we can assume that countries with higher GDP or HDI might have better facilities to take care of patients, but since there are no data reflecting this fact, it is hard to conclude that higher facility does not lead to better care of the patients.
